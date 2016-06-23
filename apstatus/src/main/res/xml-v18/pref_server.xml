@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <CheckBoxPreference
+        android:key="pref_server_mode"
+        android:defaultValue="false"
+        android:title="@string/pref_title_server_mode"
+        android:summaryOn="@string/pref_description_server_mode_on"
+        android:summaryOff="@string/pref_description_server_mode_off"/>
+
+    <CheckBoxPreference
+        android:key="pref_bind"
+        android:dependency="pref_server_mode"
+        android:defaultValue="true"
+        android:title="@string/pref_bind"
+        android:summary="@string/pref_bind_summary"/>
+
+    <CheckBoxPreference
+        android:key="pref_ap_only"
+        android:dependency="pref_server_mode"
+        android:defaultValue="true"
+        android:title="@string/pref_ap_only_title"
+        android:summaryOn="@string/pref_ap_only_on"
+        android:summaryOff="@string/pref_ap_only_off"/>
+
+    <EditTextPreference
+        android:key="pref_server_name"
+        android:dependency="pref_server_mode"
+        android:title="@string/pref_server_name_title"
+        android:summary="@string/pref_server_name_summary"
+        android:dialogMessage="@string/pref_server_name_summary"
+        android:singleLine="true"/>
+
+    <EditTextPreference
+        android:key="pref_listen_port"
+        android:dependency="pref_server_mode"
+        android:title="@string/pref_listen_port_title"
+        android:dialogMessage="@string/pref_tcp_port_dialog_message"
+        android:defaultValue="@string/pref_tcp_port"
+        android:numeric="integer"
+        android:singleLine="true"/>
+
+    <PreferenceScreen
+        android:key="pref_notifications"
+        android:title="@string/pref_notifications"
+        android:summary="@string/pref_notifications_summary"
+        android:fragment="pnapp.tools.apstatus.Settings$PackagesFragment" />
+
+</PreferenceScreen>

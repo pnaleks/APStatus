@@ -1,0 +1,78 @@
+<resources>
+    <!-- Параметры сервера -->
+    <string name="header_server_mode">Server mode</string>
+    <string name="header_server_mode_summary">
+        Configure the program to send information on battery level and
+        mobile data connection to client connected via local network.
+    </string>
+
+    <string name="pref_ap_only_title">Only while Access Point</string>
+    <string name="pref_ap_only_on">Server will be activated when device configured to be an access point</string>
+    <string name="pref_ap_only_off">Always active if started</string>
+
+    <string name="pref_title_server_mode">Server mode</string>
+    <string name="pref_description_server_mode_on">Get requests and send status information and notifications to client</string>
+    <string name="pref_description_server_mode_off">No data will be sent out</string>
+
+    <string name="pref_server_name_title">Server name</string>
+    <string name="pref_server_name_summary">Identify your device</string>
+
+    <string name="pref_listen_port_title">Local TCP port</string>
+    <string name="pref_connect_port_title">Remote TCP port</string>
+    <string name="pref_tcp_port_dialog_message">Default value is 5444</string>
+    <string name="pref_tcp_port">5444</string>
+
+    <string name="pref_bind">Bind new device</string>
+    <string name="pref_bind_summary">
+        Accept authorization request from new device. This will overwrite current pairing data.
+        Option will be cleared after successful binding.
+    </string>
+
+    <string name="pref_system_settings">System settings for notification access</string>
+    <string name="pref_system_settings_summary_enabled">
+        Access to notification granted to this app. You can disable it in the system settings.
+    </string>
+    <string name="pref_system_settings_summary_disabled">
+        You should manually enable access to notifications for this app in the system settings.
+        If enabled, notifications from selected apps on this device will be forwarded to the paired device
+    </string>
+
+    <string name="pref_forward_new">Default setting for notifications forwarder</string>
+    <string name="pref_forward_new_summary_on">Forward notifications from newly detected apps</string>
+    <string name="pref_forward_new_summary_off">Ignore notifications from newly detected apps</string>
+
+    <string name="pref_notifications">Notifications Forwarder</string>
+    <string name="pref_notifications_summary">Configure access to notifications of other apps</string>
+
+    <string name="pref_no_packages_detected_summary">
+        Notifications was not detected yet. Each app that posts notifications will be listed here.
+        You can choose which notifications should be forwarded.
+    </string>
+
+    <!-- Параметры клиента -->
+    <string name="header_client_mode">Client mode</string>
+    <string name="header_client_mode_summary">
+        Configure the program to connect to the server on local network
+        to get information about its battery level and mobile connection
+    </string>
+
+    <string name="pref_title_client_mode">Client mode</string>
+    <string name="pref_description_client_mode_on">Connect to the server and display information posted by it</string>
+    <string name="pref_description_client_mode_off">Do not connect</string>
+
+    <string name="pref_client_name_title">Client name</string>
+    <string name="pref_client_name_summary">Identify your device</string>
+
+    <string name="pref_connect_gateway_title">Connect local gateway</string>
+    <string name="pref_connect_gateway_summary_on">The server expected to be on the local gateway address</string>
+    <string name="pref_connect_gateway_summary_off">Use manually configured address</string>
+
+    <string name="pref_connect_address_title">Server address</string>
+    <string name="pref_connect_address">127.0.0.1</string>
+
+    <!-- О программе -->
+    <string name="header_promotion">About the app</string>
+    <string name="header_promotion_summary">
+        Program information and support options
+    </string>
+</resources>

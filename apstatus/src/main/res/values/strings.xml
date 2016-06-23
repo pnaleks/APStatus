@@ -1,0 +1,82 @@
+<resources>
+    <string name="app_name">APStatus</string>
+
+    <string name="awaiting">Awaiting for connection</string>
+    <string name="idle">Idle</string>
+    <string name="network_unavailable">Network unavailable</string>
+
+    <string name="format_awaiting">Awaiting on %1$s:%2$d</string>
+
+    <string name="server_title_default">APStatus Server</string>
+    <string name="server_title_format">APStatus \"%1$s\"</string>
+
+    <string name="format_paired">Paired with %1$s on %2$s:%3$d</string>
+    <string name="server_about">This app is used to inform another device about battery status and mobile data connection state of this device</string>
+
+    <string name="client_default_title">APStatus Client</string>
+    <string name="client_format_title">%1$s status</string>
+    <string name="client_format_connecting">Connecting to %1$s:%2$d</string>
+    <string name="client_format_connected">Connected to %1$s:%2$d</string>
+    <string name="client_format_paired">Received %1$d packets from %2$s</string>
+    <string name="client_about">This app is used to get information about battery and data mobile data connection from another device</string>
+
+    <string name="toast_client_started">APStatus client already started!</string>
+    <string name="toast_server_started">APStatus server already started!</string>
+
+    <string name="bitmap_maker_format">Battery %1$d%% %2$s. Signal %3$c %4$s</string>
+
+    <string name="authorization_request">Authorization request</string>
+    <string name="server_format_authorization">From \'%1$s\' on %2$s:%3$d</string>
+    <string name="accept">Accept</string>
+    <string name="refuse">Refuse</string>
+    <string name="settings">Settings</string>
+    <string name="stop">Stop</string>
+
+    <string name="accepted">Supplicant authorized successfully</string>
+    <string name="accepted_client_disconnected">Supplicant disconnected, authorization failed</string>
+
+    <!-- Promotion Activity -->
+    <string name="promo_about">
+        \tThis program allows you to forward information about your device\'s
+        power and mobile data connection state to another device over the network.
+        On newer platforms it also may to forward notifications from any of your apps.\n
+        \tThe primary goal of APStatus is to inform you about the state of the phone
+        while it is using as an access point. You can check signal and battery levels
+        remotely. APStatus lets you know about incoming call or message.\n
+        \tActually you can configure the program to monitor any android device through the network.
+    </string>
+    <string name="promo_request">
+        \tIf you like this app please consider supporting further development by choosing any of the following ways
+    </string>
+    <string name="promo_rate">Rate the app and leave your feedback</string>
+    <string name="promo_share">Share this app on social networks</string>
+    <string name="promo_donate">The best way to motivate us is make a donation</string>
+    <string name="promo_other_apps">Check out, install and enjoy by our other apps</string>
+
+    <string name="donate">Donate</string>
+
+    <string name="blogger">Blogger</string>
+    <string name="blogger_url">https://www.blogger.com/blog-this.g</string>
+
+    <string name="facebook">Facebook</string>
+    <string name="facebook_url">http://www.facebook.com/sharer.php</string>
+
+    <string name="google_plus">Google+</string>
+    <string name="google_plus_url">https://plus.google.com/share</string>
+
+    <string name="live_journal">LiveJournal</string>
+    <string name="live_journal_url">http://www.livejournal.com/update.bml</string>
+
+    <string name="pncalc_free">Floating\nCalculator\nFree</string>
+    <string name="pncalc_free_url">https://play.google.com/store/apps/details?id=pnapp.pncalc.free</string>
+
+    <string name="pncalc_full">Floating\nCalculator</string>
+    <string name="pncalc_full_url">https://play.google.com/store/apps/details?id=pnapp.pncalc.full</string>
+
+    <string name="tools_ping">Ping</string>
+    <string name="tools_ping_url">https://play.google.com/store/apps/details?id=pnapp.tools.ping</string>
+
+    <string name="share_title">APStatus - access point monitoring tool</string>
+    <string name="share_text">Get battery and mobile data connection status on remotely connected device!</string>
+    <string name="tools_apstatus_url">https://play.google.com/store/apps/details?id=pnapp.tools.apstatus</string>
+</resources>

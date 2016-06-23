@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="battery_health">Battery health</string>
+    <string-array name="battery_health">
+        <item>Unspecified</item>
+        <item>Unknown</item>
+        <item>Good</item>
+        <item>Overheat</item>
+        <item>Dead</item>
+        <item>Over voltage</item>
+        <item>Unspecified failure</item>
+        <item>Cold</item>
+    </string-array>
+
+    <string name="battery_plugged">Battery plugged</string>
+    <string-array name="battery_plugged">
+        <item>Unplugged</item>
+        <item>AC</item>
+        <item>USB</item>
+        <item>Unknown</item>
+        <item>Wireless</item>
+    </string-array>
+
+    <string name="battery_status">Battery status</string>
+    <string-array name="battery_status">
+        <item>Unspecified</item>
+        <item>Unknown</item>
+        <item>Charging</item>
+        <item>Discharging</item>
+        <item>Not charging</item>
+        <item>Full</item>
+    </string-array>
+
+    <string name="unspecified">unspecified</string>
+    <string name="battery_level">Battery level</string>
+    <string name="battery_voltage">Battery voltage</string>
+    <string name="battery_temperature">Battery temperature</string>
+    <string name="battery_technology">Battery technology</string>
+    <string name="battery_not_present">Battery not present</string>
+    <string name="battery_low">Battery low</string>
+</resources>
