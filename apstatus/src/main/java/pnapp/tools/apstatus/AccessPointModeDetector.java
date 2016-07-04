@@ -66,7 +66,7 @@ public class AccessPointModeDetector extends BroadcastReceiver {
             context.startService( new Intent(Server.ACTION_EXIT, null, context, Server.class) );
         }
 
-        if ( intent !=null && Base.ACTION_LAUNCH.equals(intent.getAction()) ) {
+        if ( intent != null && Base.ACTION_LAUNCH.equals(intent.getAction()) ) {
             context.startActivity( new Intent(context, Settings.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) );
         }
     }
