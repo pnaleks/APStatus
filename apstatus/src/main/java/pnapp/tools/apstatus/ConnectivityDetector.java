@@ -32,7 +32,7 @@ public class ConnectivityDetector extends BroadcastReceiver {
             // Поделючение по WiFi
             DhcpInfo dhcpInfo = ((WifiManager) context.getSystemService(Context.WIFI_SERVICE)).getDhcpInfo();
             if (dhcpInfo.ipAddress != 0) {
-                listenHost = Base.ipToString(dhcpInfo.ipAddress);
+                listenHost = SocketTask.ipToString(dhcpInfo.ipAddress);
                 Base.log("ConnectivityDetector > WiFi detected, ip = " + listenHost + ", starting the server");
             } else {
                 Base.log("ConnectivityDetector > WiFi detected, ip not attached, stopping the server");

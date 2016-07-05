@@ -6,3 +6,6 @@ The primary goal of APStatus is to inform you about the state of the phone while
 Actually you can configure the program to monitor any android device through the network.
 
 [Become a beta tester](https://play.google.com/apps/testing/pnapp.tools.apstatus)
+
+## Gson (2016.07.05)
+The try to replace direct serialization/deserialization of Intent-object by the Gson is now canceled because impossible to determine exact type of object at deserialization. For example serialized byte array transforms into ArrayList of Integers and so I need to extract it manualy on the high level.

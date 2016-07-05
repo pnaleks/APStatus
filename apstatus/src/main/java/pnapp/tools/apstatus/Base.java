@@ -4,42 +4,33 @@ import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.v4.app.NotificationCompat;
-import android.text.SpannableString;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.security.Key;
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.crypto.Cipher;
 
@@ -94,9 +85,6 @@ public abstract class Base extends Service {
     public static final String EXTRA_SIGNAL_TYPE = "signal_type";
     /** Признак наличия активного соединения, boolean */
     public static final String EXTRA_SIGNAL_CONNECTED = "signal_connected";
-
-    /** Регулярное выражение для преобразования IP-адреса из строкового представления */
-    private static final Pattern PATTERN_IP = Pattern.compile("(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})");
 
     public static final int MESSAGE_APPROVED = 100;
     public static final int MESSAGE_READER_SUCCESS = 200;
@@ -205,11 +193,11 @@ public abstract class Base extends Service {
         }
     }
 
-    protected void onRead(Intent intent) {}
-    protected void onWrite(@SuppressWarnings("UnusedParameters") SocketTask writer) {}
-    protected void onError(@SuppressWarnings("UnusedParameters") SocketTask task) {}
-    protected void onApproved(SocketTask task) {}
-    protected void onWatchdog() {}
+    abstract protected void onRead(Intent intent);
+    abstract protected void onWrite(SocketTask writer);
+    abstract protected void onError(SocketTask task);
+    abstract protected void onApproved(SocketTask task);
+    abstract protected void onWatchdog();
 
     /**
      * Переустановка защитного механизма на срабатываение через заданное время, по
@@ -227,14 +215,11 @@ public abstract class Base extends Service {
     protected Handler mHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
-
             switch( msg.what ) {
                 case MESSAGE_ERROR:
                     SocketTask task = (SocketTask) msg.obj;
                     log("Error at " + task.toString() + ": " + task.getMessage());
-                    if ( !"Socket closed".equals(task.getMessage()) ) {
-                        onError(task);
-                    }
+                    if ( !"Socket closed".equals(task.getMessage()) ) { onError(task); }
                     break;
                 case MESSAGE_WRITER_SUCCESS:
                     onWrite((SocketTask) msg.obj);
@@ -265,14 +250,16 @@ public abstract class Base extends Service {
         if (magic != MAGIC_RAW) throw new IOException("Bad magic " + magic);
 
         int size = buffer.getInt();
-        if (size < 0 || size > MAX_DATA_SIZE) throw new IOException("Bad data size " + size);
+        if (size <= 0 || size > MAX_DATA_SIZE) throw new IOException("Bad data size " + size);
 
         byte[] data = new byte[size];
         size = is.read(data);
         if (size == -1) throw new IOException("Unexpected EOF");
         if (size != data.length) throw new IOException("Read " + size + " bytes, " + data.length + " expected");
 
-        Intent intent = getIntent(data);
+        String json = new String(data);
+        log("readIntent:\n" + json);
+        Intent intent = (new Gson()).fromJson(json, Intent.class);
         OutputStream os = socket.getOutputStream();
         os.write(ACK);
         os.flush();
@@ -301,7 +288,7 @@ public abstract class Base extends Service {
         c.init(Cipher.DECRYPT_MODE, key);
         data = c.doFinal(data);
 
-        Intent intent = getIntent(data);
+        Intent intent = (new Gson()).fromJson(new String(data), Intent.class);
         OutputStream os = socket.getOutputStream();
         os.write(ACK);
         os.flush();
@@ -311,7 +298,23 @@ public abstract class Base extends Service {
     public static void writeIntent(Socket socket, Intent intent) throws Exception {
         OutputStream os = socket.getOutputStream();
         ByteBuffer buffer = ByteBuffer.allocate(12);
-        byte[] data = getBytes(intent);
+
+        Gson gson = (new GsonBuilder())
+                .addSerializationExclusionStrategy(new ExclusionStrategy() {
+                    @Override
+                    public boolean shouldSkipField(FieldAttributes f) {
+                        return "mClassLoader".equals(f.getName());
+                    }
+
+                    @Override
+                    public boolean shouldSkipClass(Class<?> clazz) {
+                        return false;
+                    }
+                })
+                .create();
+        String json =  gson.toJson(intent);
+        log("writeIntent:\n" + json);
+        byte[] data = json.getBytes();
         buffer.putLong(MAGIC_RAW);
         buffer.putInt(data.length);
         os.write(buffer.array());
@@ -328,7 +331,7 @@ public abstract class Base extends Service {
     public static void writeIntent(Socket socket, Intent intent, Key key) throws Exception {
         OutputStream os = socket.getOutputStream();
         ByteBuffer buffer = ByteBuffer.allocate(12);
-        byte[] data = getBytes(intent);
+        byte[] data = (new Gson()).toJson(intent).getBytes();
         Cipher c = Cipher.getInstance("AES/CBC/PKCS5Padding");
         c.init(Cipher.ENCRYPT_MODE, key);
         buffer.putLong(MAGIC_AES);
@@ -341,201 +344,5 @@ public abstract class Base extends Service {
         int ack = socket.getInputStream().read();
         if( ack != ACK ) throw new Exception("Unexpected ACK = " + ack);
         socket.setSoTimeout(0);
-    }
-
-    public static Intent getIntent(byte[] bytes) throws IOException, ClassNotFoundException, NullPointerException {
-        ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-        ObjectInputStream ois = new ObjectInputStream(bis);
-        Intent intent = new Intent();
-        String s;
-        int size;
-        while (true) {
-            s = (String) ois.readObject();
-            switch (s) {
-                case "action":
-                    intent.setAction( (String) ois.readObject() );
-                    break;
-                case "type":
-                    intent.setType( (String) ois.readObject() );
-                    break;
-                case "data":
-                    intent.setData(Uri.parse((String) ois.readObject()));
-                    break;
-                case "categories":
-                    size = ois.readInt();
-                    for (int i = 0; i < size; i++ ) {
-                        intent.addCategory((String) ois.readObject());
-                    }
-                    break;
-                case "extras":
-                    Bundle extras = getBundle(ois);
-                    if ( extras != null ) {
-                        intent.putExtras(extras);
-                    }
-                    break;
-                case "end":
-                    return intent;
-            }
-        }
-    }
-
-    public static byte[] getBytes(Intent intent) throws  IOException, NullPointerException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(bos);
-
-        String s;
-        if ( (s = intent.getAction()) != null ) {
-            oos.writeObject("action");
-            oos.writeObject(s);
-        }
-        if ( (s = intent.getType()) != null ) {
-            oos.writeObject("type");
-            oos.writeObject(s);
-        }
-        if ( (s = intent.getDataString()) != null ) {
-            oos.writeObject("data");
-            oos.writeObject(s);
-        }
-
-        oos.writeObject("categories");
-        Set<String> categories = intent.getCategories();
-        if ( categories == null ) {
-            oos.writeInt(0);
-        } else {
-            oos.writeInt(categories.size());
-            for (String category : categories) {
-                oos.writeObject(category);
-            }
-        }
-
-        put(oos, "extras", intent.getExtras());
-
-        oos.writeObject("end");
-        oos.flush(); //На всякий случай, а то что-то проблемы с передачей больших объемов
-        return bos.toByteArray();
-    }
-
-    private static void put(ObjectOutputStream oos, String name, Bundle bundle) throws IOException {
-        oos.writeObject(name);
-        if ( bundle == null ) {
-            oos.writeInt(0);
-            return;
-        }
-
-        int size = 0;
-        for (String key : bundle.keySet()) {
-            Object obj = bundle.get(key);
-            if ( obj == null ) continue;
-            if ( obj instanceof Serializable || obj instanceof Uri || obj instanceof Bitmap || obj instanceof Bundle || obj instanceof SpannableString) {
-                size++;
-            } else {
-                log("Base.put: Key '" + key + "' has unsupported type '" + obj.getClass().getName() + "'");
-            }
-        }
-
-        oos.writeInt(size);
-        for (String key : bundle.keySet()) {
-            Object obj = bundle.get(key);
-            if ( obj == null ) continue;
-            if ( obj instanceof Serializable ) {
-                oos.writeObject("Serializable");
-                oos.writeObject(key);
-                oos.writeObject(obj);
-            } else if ( obj instanceof SpannableString ) {
-                oos.writeObject("Serializable");
-                oos.writeObject(key);
-                oos.writeObject(obj.toString() );
-                log("PUT > SpannableString " + key + ": " + obj.toString());
-            } else if ( obj instanceof Uri ) {
-                oos.writeObject("Uri");
-                oos.writeObject(key);
-                oos.writeObject(obj.toString());
-            } else if ( obj instanceof Bitmap ) {
-                Bitmap bitmap = (Bitmap) obj;
-                oos.writeObject("Bitmap");
-                oos.writeObject(key);
-                bitmap.compress(Bitmap.CompressFormat.PNG, 0, oos);
-            } else if ( obj instanceof Bundle ) {
-                oos.writeObject("Bundle");
-                put(oos, key, (Bundle) obj);
-            }
-        }
-    }
-
-    private static Bundle getBundle(ObjectInputStream ois) throws IOException, ClassNotFoundException {
-        int size = ois.readInt();
-        StringBuilder sb = new StringBuilder();
-        sb.append("GetBundle > size = ").append(size).append('\n');
-
-        if ( size <= 0 ) {
-            log(sb.toString());
-            return null;
-        }
-
-        Bundle bundle = new Bundle(size);
-        for (int i = 0; i < size; i++) {
-            String what = (String) ois.readObject();
-            String key = (String) ois.readObject();
-
-            String type = what;
-            String info;
-
-            switch ( what ) {
-                case "Uri":
-                    Uri uri = Uri.parse( (String) ois.readObject() );
-                    bundle.putParcelable(key,uri);
-                    info = uri.toString();
-                    break;
-                case "Bitmap":
-                    Bitmap bitmap = BitmapFactory.decodeStream(ois);
-                    bundle.putParcelable(key, bitmap);
-                    info = (bitmap == null) ? "null" : bitmap.getByteCount() + " bytes";
-                    break;
-                case "Bundle":
-                    Bundle b = getBundle(ois);
-                    bundle.putBundle(key,b);
-                    info = (b == null) ? "null" : b.size() + " items";
-                    break;
-                case "Serializable":
-                    Serializable value = (Serializable) ois.readObject();
-                    bundle.putSerializable(key, value);
-                    type = "'" + value.getClass().getSimpleName();
-                    if ( value.getClass().isArray() ) info = "{" + Array.getLength(value) + " items}";
-                    else info = value.toString();
-                    break;
-                default:
-                    info = "Unexpected type";
-            }
-            sb.append("    ").append(type).append(' ').append(key).append(" = ").append(info).append('\n');
-        }
-        log(sb.toString());
-        return bundle;
-    }
-
-    @SuppressLint("DefaultLocale")
-    public static String ipToString(int ip) {
-        return String.format("%d.%d.%d.%d", ip & 0x0ff, (ip >>> 8) & 0x0ff, (ip >>> 16) & 0x0ff, ip >>> 24);
-    }
-
-    /**
-     * Преобразует строковое представление IP-адреса в int. Только для IPv4
-     *
-     * @param hostAddress IP-адрес в виде строки типа 127.0.0.1
-     * @return IP-адрес или -1 если hostAddress имеет неправильный формат
-     */
-    public static int ip(String hostAddress) {
-        Matcher m = PATTERN_IP.matcher(hostAddress);
-        if ( m.matches() ) {
-            return
-                    (Integer.parseInt( m.group(4) ) << 24) |
-                    (Integer.parseInt( m.group(3) ) << 16) |
-                    (Integer.parseInt( m.group(2) ) <<  8) |
-                    (Integer.parseInt( m.group(1) )      );
-        }
-        return -1;
-    }
-
-    public static boolean isLoopback(String address) {
-        return "localhost".equalsIgnoreCase(address) || (ip(address)&255)  == 127;
     }
 }

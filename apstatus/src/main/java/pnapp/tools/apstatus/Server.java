@@ -10,6 +10,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.BatteryManager;
 import android.os.Build;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Base64;
@@ -313,6 +314,9 @@ public class Server extends Base {
     }
 
     @Override
+    protected void onRead(Intent intent) {}
+
+    @Override
     protected void onWrite(SocketTask task) {
         if ( writer != task ) throw new RuntimeException("Unexpected onWrite from " + task.toString());
 
@@ -358,6 +362,7 @@ public class Server extends Base {
         postDefaultNotification();
     }
 
+
     @Override
     protected void onError(SocketTask task) {
         if ( task instanceof Writer ) {
@@ -372,6 +377,9 @@ public class Server extends Base {
         }
         postDefaultNotification();
     }
+
+    @Override
+    protected void onWatchdog() {}
 
     public void postDefaultNotification() {
         String title;
@@ -505,7 +513,16 @@ public class Server extends Base {
                     intent = readIntent(socket);
                     if ( intent == null ) return;
                     if ( !ACTION_KEY_RESPONSE.equals(intent.getAction()) ) throw new Exception("Wrong action " + intent.getAction() + ", " + ACTION_KEY_RESPONSE + " expected");
-                    byte[] bytes = intent.getByteArrayExtra(EXTRA_DATA);
+                    ArrayList<Integer> data = intent.getIntegerArrayListExtra(Base.EXTRA_NAME);
+                    byte[] bytes = null;
+                    if( data != null ) {
+                        bytes = new byte[data.size()];
+                        int i = 0;
+                        for( Integer integer : data ) {
+                            bytes[i++] = integer.byteValue();
+                        }
+                    }
+                    //byte[] bytes = intent.getByteArrayExtra(EXTRA_DATA);
                     key = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(bytes));
                 }
 
@@ -520,7 +537,16 @@ public class Server extends Base {
                 intent = readIntent(socket);
                 if ( intent == null ) return;
                 if ( !ACTION_ECHO_RESPONSE.equals(intent.getAction()) ) throw new Exception("Wrong action " + intent.getAction() + ", " + ACTION_ECHO_RESPONSE + " expected");
-                byte[] returned = intent.getByteArrayExtra(Base.EXTRA_DATA);
+                ArrayList<Integer> data = intent.getIntegerArrayListExtra(Base.EXTRA_NAME);
+                byte[] returned = null;
+                if( data != null ) {
+                    returned = new byte[data.size()];
+                    int i = 0;
+                    for( Integer integer : data ) {
+                        returned[i++] = integer.byteValue();
+                    }
+                }
+                //byte[] returned = intent.getByteArrayExtra(Base.EXTRA_DATA);
                 if ( returned == null ) throw new Exception("Decrypted data expected");
 
                 if ( original.length != returned.length ) throw new Exception("Returned data has wrong length");
