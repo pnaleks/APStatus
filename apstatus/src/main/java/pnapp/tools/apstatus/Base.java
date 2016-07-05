@@ -1,6 +1,5 @@
 package pnapp.tools.apstatus;
 
-import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
@@ -15,10 +14,6 @@ import android.os.Message;
 import android.support.v4.app.NotificationCompat;
 import android.text.SpannableString;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -38,8 +33,6 @@ import java.security.Key;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.crypto.Cipher;
 
@@ -94,9 +87,6 @@ public abstract class Base extends Service {
     public static final String EXTRA_SIGNAL_TYPE = "signal_type";
     /** Признак наличия активного соединения, boolean */
     public static final String EXTRA_SIGNAL_CONNECTED = "signal_connected";
-
-    /** Регулярное выражение для преобразования IP-адреса из строкового представления */
-    private static final Pattern PATTERN_IP = Pattern.compile("(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})");
 
     public static final int MESSAGE_APPROVED = 100;
     public static final int MESSAGE_READER_SUCCESS = 200;
@@ -155,20 +145,6 @@ public abstract class Base extends Service {
 
     @Override
     public IBinder onBind(Intent intent) { return null; }
-
-    public void toast(int textResId) {
-        @SuppressLint("InflateParams")
-        TextView view = (TextView) LayoutInflater.from(this).inflate(R.layout.toast, null);
-
-        view.setText(textResId);
-        view.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_apstatus_a_24dp,0,0,0);
-
-        Toast toast = new Toast(this);
-        toast.setGravity(Gravity.CENTER, 0, 0);
-        toast.setDuration(Toast.LENGTH_SHORT);
-        toast.setView(view);
-        toast.show();
-    }
 
     public static String mLogDate;
     public static void log(String text) {
@@ -510,32 +486,5 @@ public abstract class Base extends Service {
         }
         log(sb.toString());
         return bundle;
-    }
-
-    @SuppressLint("DefaultLocale")
-    public static String ipToString(int ip) {
-        return String.format("%d.%d.%d.%d", ip & 0x0ff, (ip >>> 8) & 0x0ff, (ip >>> 16) & 0x0ff, ip >>> 24);
-    }
-
-    /**
-     * Преобразует строковое представление IP-адреса в int. Только для IPv4
-     *
-     * @param hostAddress IP-адрес в виде строки типа 127.0.0.1
-     * @return IP-адрес или -1 если hostAddress имеет неправильный формат
-     */
-    public static int ip(String hostAddress) {
-        Matcher m = PATTERN_IP.matcher(hostAddress);
-        if ( m.matches() ) {
-            return
-                    (Integer.parseInt( m.group(4) ) << 24) |
-                    (Integer.parseInt( m.group(3) ) << 16) |
-                    (Integer.parseInt( m.group(2) ) <<  8) |
-                    (Integer.parseInt( m.group(1) )      );
-        }
-        return -1;
-    }
-
-    public static boolean isLoopback(String address) {
-        return "localhost".equalsIgnoreCase(address) || (ip(address)&255)  == 127;
     }
 }

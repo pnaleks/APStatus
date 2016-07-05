@@ -115,10 +115,7 @@ public class Server extends Base {
                 break;
             case ACTION_ACCEPT:
                 ((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).cancel(NOTIFICATION_ID_AUTHORIZATION);
-                if ( writer == null ) {
-                    toast(R.string.accepted_client_disconnected);
-                } else {
-                    toast(R.string.accepted);
+                if ( writer != null ) {
                     log("Server > Client " + writer.toString() + " accepted by user");
                     serverKey = (PublicKey) writer.getKey();
                     preferences.edit()
@@ -420,14 +417,14 @@ public class Server extends Base {
 
         NotificationCompat.Action accept = new NotificationCompat.Action(
                 R.drawable.ic_check_white_24dp,
-                "Accept",
+                getString(R.string.accept),
                 PendingIntent.getService(this, 0,
                         new Intent(ACTION_ACCEPT, null, this, getClass()), PendingIntent.FLAG_UPDATE_CURRENT)
         );
 
         NotificationCompat.Action refuse = new NotificationCompat.Action(
                 R.drawable.ic_check_white_24dp,
-                "Refuse",
+                getString(R.string.refuse),
                 PendingIntent.getService(this, 0,
                         new Intent(ACTION_REFUSE, null, this, getClass()), PendingIntent.FLAG_UPDATE_CURRENT)
         );
@@ -436,7 +433,7 @@ public class Server extends Base {
         builder
                 .setDefaults(Notification.DEFAULT_SOUND)
                 .setSmallIcon(R.drawable.ic_apstatus_a_24dp)
-                .setContentTitle("Authorization request")
+                .setContentTitle(getString(R.string.authorization_request))
                 .setTicker(text)
                 .setContentText(text)
                 .addAction(accept)

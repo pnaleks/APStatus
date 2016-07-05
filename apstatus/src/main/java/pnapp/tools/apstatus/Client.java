@@ -137,7 +137,7 @@ public class Client extends Base {
         if ( preferences.getBoolean(Settings.PREF_CONNECT_GATEWAY, true) ) {
             if ( networkInfo.getType() == ConnectivityManager.TYPE_WIFI ) {
                 DhcpInfo dhcpInfo = ((WifiManager) getSystemService(WIFI_SERVICE)).getDhcpInfo();
-                if ( dhcpInfo.gateway != 0 ) remoteHost = ipToString( dhcpInfo.gateway );
+                if ( dhcpInfo.gateway != 0 ) remoteHost = SocketTask.ipToString( dhcpInfo.gateway );
             }
         } else {
             remoteHost = preferences.getString(Settings.PREF_CONNECT_ADDRESS, LOOPBACK);

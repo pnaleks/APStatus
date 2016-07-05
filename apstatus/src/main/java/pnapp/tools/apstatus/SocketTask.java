@@ -147,13 +147,20 @@ public abstract class SocketTask implements Runnable {
         return String.format("%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
     }
 
+    /**
+     * Преобразует строковое представление IP-адреса в int. Только для IPv4
+     *
+     * @param hostAddress IP-адрес в виде строки типа 127.0.0.1
+     * @return IP-адрес или -1 если hostAddress имеет неправильный формат
+     */
     public static int ip(String hostAddress) {
         Matcher m = PATTERN_IP.matcher(hostAddress);
         if ( m.matches() ) {
-            return (Integer.parseInt( m.group(4) ) << 24 ) |
-                   (Integer.parseInt( m.group(3) ) << 16 ) |
-                   (Integer.parseInt( m.group(2) ) << 8) |
-                    Integer.parseInt( m.group(1) );
+            return
+                    (Integer.parseInt( m.group(4) ) << 24) |
+                            (Integer.parseInt( m.group(3) ) << 16) |
+                            (Integer.parseInt( m.group(2) ) <<  8) |
+                            (Integer.parseInt( m.group(1) )      );
         }
         return -1;
     }
@@ -213,4 +220,7 @@ public abstract class SocketTask implements Runnable {
         return -1;
     }
 
+    public static boolean isLoopback(String address) {
+        return "localhost".equalsIgnoreCase(address) || (ip(address)&255)  == 127;
+    }
 }

@@ -174,7 +174,7 @@ public class Settings extends PreferenceActivity {
             SharedPreferences prefs = getPreferenceScreen().getSharedPreferences();
             Context context = getActivity();
 
-            boolean newValue = clientMode && !connectGateway && Base.isLoopback(connectAddress);
+            boolean newValue = clientMode && !connectGateway && SocketTask.isLoopback(connectAddress);
 
             if ( newValue == loopback ) return;
 
@@ -262,7 +262,7 @@ public class Settings extends PreferenceActivity {
             connectAddress = prefs.getString(PREF_CONNECT_ADDRESS, Base.LOOPBACK);
             connectGateway = prefs.getBoolean(PREF_CONNECT_GATEWAY, true);
 
-            loopback = clientMode && !connectGateway && Base.isLoopback(connectAddress);
+            loopback = clientMode && !connectGateway && SocketTask.isLoopback(connectAddress);
 
             findPreference(PREF_CLIENT_MODE).setOnPreferenceChangeListener(mListener);
             findPreference(PREF_CONNECT_GATEWAY).setOnPreferenceChangeListener(mListener);
@@ -364,7 +364,7 @@ public class Settings extends PreferenceActivity {
     public static boolean isLoopbackMode(SharedPreferences preferences) {
         return preferences.getBoolean(PREF_CLIENT_MODE,false)
                 && !preferences.getBoolean(PREF_CONNECT_GATEWAY,true)
-                && Base.isLoopback(preferences.getString(Settings.PREF_CONNECT_ADDRESS,Base.LOOPBACK));
+                && SocketTask.isLoopback(preferences.getString(Settings.PREF_CONNECT_ADDRESS,Base.LOOPBACK));
     }
 
     public static boolean enableComponent(Context pkg, Class<?> cls) {
