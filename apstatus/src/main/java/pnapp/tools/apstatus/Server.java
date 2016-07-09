@@ -213,11 +213,12 @@ public class Server extends Base {
         }
 
         if ( (flags & FLAG_SIGNAL_CHANGED) != 0 ) {
-            intent
-                    .putExtra(EXTRA_SIGNAL_LEVEL, mMonitor.getLevel())
-                    .putExtra(EXTRA_SIGNAL_TYPE, mMonitor.getType())
-                    .putExtra(EXTRA_SIGNAL_CONNECTED, mMonitor.isConnected());
-
+            if( mMonitor != null ) {
+                intent
+                        .putExtra(EXTRA_SIGNAL_LEVEL, mMonitor.getLevel())
+                        .putExtra(EXTRA_SIGNAL_TYPE, mMonitor.getType())
+                        .putExtra(EXTRA_SIGNAL_CONNECTED, mMonitor.isConnected());
+            }
         }
 
         write();

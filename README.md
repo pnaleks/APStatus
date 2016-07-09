@@ -6,3 +6,7 @@ The primary goal of APStatus is to inform you about the state of the phone while
 Actually you can configure the program to monitor any android device through the network.
 
 [Become a beta tester](https://play.google.com/apps/testing/pnapp.tools.apstatus)
+
+## 1.0.14 beta
+* Sorted list of packages for notification forwarder settings screen
+* Small improvements

@@ -7,8 +7,8 @@ android {
         applicationId "pnapp.tools.apstatus"
         minSdkVersion 13
         targetSdkVersion 24
-        versionCode 13
-        versionName '1.0.13 beta'
+        versionCode 14
+        versionName '1.0.14 beta'
     }
     buildTypes {
         release {

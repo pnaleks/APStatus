@@ -5,10 +5,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
@@ -18,7 +16,6 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author P.N. Alekseev
@@ -291,9 +288,6 @@ public class Settings extends PreferenceActivity {
             Activity context = getActivity();
 
             PreferenceScreen screen = getPreferenceManager().createPreferenceScreen(context);
-            PackageManager pm = context.getPackageManager();
-
-            Set<String> prefPackagesSet = getPreferenceManager().getSharedPreferences().getStringSet(PREF_PACKAGES_SET, null);
 
             prefSystemSettings = new Preference(context);
             prefSystemSettings.setTitle(R.string.pref_system_settings);
@@ -308,36 +302,15 @@ public class Settings extends PreferenceActivity {
             preference.setDefaultValue(false);
             screen.addPreference(preference);
 
-            if ( prefPackagesSet == null ) {
+            PackagesSelector packagesSelector = new PackagesSelector(getActivity());
+            packagesSelector.addAll(PREF_PACKAGES_SET);
+            if( packagesSelector.isEmpty() ) {
                 Preference info = new Preference(context);
                 info.setSummary(R.string.pref_no_packages_detected_summary);
                 screen.addPreference(info);
             } else {
-                // TODO: Сделать сортировку по алфавиту
-                // TODO: Отображать сначала отмеченные пакеты
-                for( String packageName : prefPackagesSet ) {
-                    // Игнорирую собственный пакет. На всякий случай!
-                    if ( BuildConfig.APPLICATION_ID.equals(packageName) ) continue;
-
-                    CharSequence title;
-                    CharSequence summary = null;
-                    Drawable icon = null;
-                    try {
-                        ApplicationInfo applicationInfo = pm.getApplicationInfo(packageName,0);
-                        title = pm.getApplicationLabel(applicationInfo);
-                        icon = pm.getApplicationIcon(packageName);
-                        summary = packageName;
-                    } catch (PackageManager.NameNotFoundException e) {
-                        title = packageName;
-                    }
-
-                    preference = new CheckBoxPreference(context);
-                    preference.setKey(packageName);
-                    preference.setTitle(title);
-                    if ( summary != null ) preference.setSummary(summary);
-                    if ( icon != null ) preference.setIcon(icon);
-                    preference.setDefaultValue(false);
-                    screen.addPreference(preference);
+                for (CheckBoxPreference pref : packagesSelector) {
+                    screen.addPreference(pref);
                 }
             }
 
