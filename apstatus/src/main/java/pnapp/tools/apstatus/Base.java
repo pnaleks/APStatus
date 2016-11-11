@@ -43,20 +43,23 @@ import javax.crypto.Cipher;
 public abstract class Base extends Service {
     public static final String LOOPBACK = "127.0.0.1";
 
+
+    public static final String NAME_ACTION = "action";
     /** Используется для первичного обращения клиента к серверу */
-    public static final String ACTION_CONNECT = "action_connect";
+    public static final String ACTION_CONNECT = "connect";
     /** Запрос-проверка от сервера к клиенту. Данные в byte[] с ключем {@link #EXTRA_DATA} содержат случайный набор байт закодированный открытым RSA ключом */
-    public static final String ACTION_ECHO_REQUEST = "action_echo_request";
+    public static final String ACTION_ECHO_REQUEST = "echo_request";
     /** Отклик клиента на запрос {@link #ACTION_ECHO_REQUEST} содержит расшифрованный byte[] с ключом {@link #EXTRA_DATA} */
-    public static final String ACTION_ECHO_RESPONSE = "action_echo_response";
+    public static final String ACTION_ECHO_RESPONSE = "echo_response";
 
-    public static final String ACTION_KEY_REQUEST = "action_key_request";
-    public static final String ACTION_KEY_RESPONSE = "action_key_response";
+    public static final String ACTION_KEY_REQUEST = "key_request";
+    public static final String ACTION_KEY_RESPONSE = "key_response";
 
-    public static final String ACTION_ACCEPT = "action_accept";
-    public static final String ACTION_REFUSE = "action_refuse";
+    public static final String ACTION_ACCEPT = "accept";
+    public static final String ACTION_REFUSE = "refuse";
 
-    public static final String ACTION_UPDATE = "action_update";
+    public static final String ACTION_UPDATE = "update";
+
     public static final String ACTION_POST = BuildConfig.APPLICATION_ID + ".POST";
     public static final String ACTION_REMOVE = BuildConfig.APPLICATION_ID + ".REMOVE";
 

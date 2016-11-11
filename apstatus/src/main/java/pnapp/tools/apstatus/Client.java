@@ -19,9 +19,15 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.util.Base64;
 
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.handshake.ServerHandshake;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.URI;
 import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -30,6 +36,7 @@ import java.security.PrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import javax.crypto.Cipher;
 
@@ -72,7 +79,45 @@ public class Client extends Base {
         put(null, R.drawable.ic_apstatus_a_24dp);
     }};
 
-    public Client() {}
+    private WSClient mClient;
+
+    public class WSClient extends WebSocketClient {
+
+        public WSClient(URI serverURI) {
+            super(serverURI);
+        }
+
+        @Override
+        public void onOpen(ServerHandshake handshakedata) {
+
+        }
+
+        @Override
+        public void onMessage(String message) {
+            try {
+                JSONObject jsonObject = new JSONObject(message);
+                String action = jsonObject.getString(NAME_ACTION);
+                switch ( action ) {
+                    case ACTION_UPDATE:
+                    case ACTION_POST:
+                    case ACTION_REMOVE:
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        @Override
+        public void onClose(int code, String reason, boolean remote) {
+
+        }
+
+        @Override
+        public void onError(Exception ex) {
+
+        }
+    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -446,7 +491,7 @@ public class Client extends Base {
             return null;
         }
 
-        public static RemoteNotification remove(Intent intent) {
+        static RemoteNotification remove(Intent intent) {
             String remotePackage = intent.getStringExtra(EXTRA_PACKAGE);
             int remoteId = intent.getIntExtra(EXTRA_ID,0);
             if ( remotePackage != null ) {
@@ -461,16 +506,69 @@ public class Client extends Base {
             return null;
         }
 
-        public RemoteNotification(@NonNull String remotePackage, int remoteId) {
+        RemoteNotification(@NonNull String remotePackage, int remoteId) {
             this.remotePackage = remotePackage;
             this.remoteId = remoteId;
             this.id = ++lastNotificationId;
         }
 
-        public int getId() { return id; }
+        int getId() { return id; }
 
-        public boolean match(String otherPackage, int otherId) {
+        boolean match(String otherPackage, int otherId) {
             return remoteId == otherId && remotePackage.equals(otherPackage);
+        }
+
+        void post(Context context, JSONObject jsonObject) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Client > Notification posted (").append(remotePackage).append(" : ").append(getId()).append(')');
+
+            try {
+                NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
+
+                String category = jsonObject.getString(EXTRA_CATEGORY);
+                builder.setSmallIcon(iconsMap.containsKey(category) ? iconsMap.get(category) : R.drawable.ic_apstatus_a_24dp);
+
+                JSONObject extras = jsonObject.getJSONObject(EXTRA_EXTRAS);
+                String subText = jsonObject.getString(EXTRA_LABEL);
+                if (extras == null) {
+                    sb.append(", has no extras");
+                } else {
+                    NotificationCompat.Style style = null;
+                    sb.append(", has ").append(extras.length()).append(" extras");
+                    Iterator<String> keys = extras.keys();
+                    while ( keys.hasNext() ) {
+                        String key = keys.next();
+                        Object obj = extras.get(key);
+                        if (obj != null) {
+                            switch (key) {
+                                case NotificationCompat.EXTRA_TITLE:
+                                    builder.setContentTitle(obj.toString());
+                                    builder.setTicker(obj.toString());
+                                    break;
+                                case NotificationCompat.EXTRA_SUB_TEXT:
+                                    subText = obj.toString();
+                                    break;
+                                case NotificationCompat.EXTRA_TEXT:
+                                    builder.setContentText(obj.toString());
+                                    break;
+                                case NotificationCompat.EXTRA_TEMPLATE:
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+
+                    if (subText != null) builder.setSubText(subText);
+
+                    Notification notification = builder.build();
+                    ((NotificationManager) context.getSystemService(NOTIFICATION_SERVICE)).notify(getId(), notification);
+                }
+            } catch (Exception e) {
+                log("Client > Error at postRemoteNotification: " + e.getMessage());
+            }
+            log(sb.toString());
+
         }
     }
 
@@ -497,7 +595,7 @@ public class Client extends Base {
         private String name;
         private Socket socket;
 
-        public Supplicant(String remoteAddress, int remotePort) {
+        Supplicant(String remoteAddress, int remotePort) {
             host = remoteAddress;
             port = remotePort;
         }

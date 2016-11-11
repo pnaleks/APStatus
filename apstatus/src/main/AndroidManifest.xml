@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="pnapp.tools.apstatus" >
 
+    <uses-sdk tools:overrideLibrary="ru.pnapp.notifications_packer"/>
+
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />

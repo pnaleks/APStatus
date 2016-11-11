@@ -11,6 +11,9 @@ import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  * @author P.N. Alekseev
  * @author pnaleks@gmail.com
@@ -119,6 +122,23 @@ public class ClientBitmapMaker {
         format = resources.getString(R.string.bitmap_maker_format);
     }
 
+
+    public ClientBitmapMaker set(JSONObject jsonObject) {
+        BatteryStatus status;
+
+        try {
+            status =  BatteryStatus.valueOf(jsonObject.getString(Base.EXTRA_BATTERY_STATUS));
+        } catch (JSONException|IllegalArgumentException e) {
+            status = batteryStatus;
+        }
+        setBatteryStatus(status);
+        setBatteryLevel(jsonObject.optInt(Base.EXTRA_BATTERY_LEVEL, batteryLevel));
+        setSignalLevel(jsonObject.optInt(Base.EXTRA_SIGNAL_LEVEL, signalLevel));
+        setSignalType(jsonObject.optInt(Base.EXTRA_SIGNAL_TYPE, signalType));
+        setSignalConnected(jsonObject.optBoolean(Base.EXTRA_SIGNAL_CONNECTED, signalConnected));
+
+        return this;
+    }
 
     public ClientBitmapMaker set(Intent intent) {
         try {

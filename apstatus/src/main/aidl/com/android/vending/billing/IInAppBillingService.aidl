@@ -27,7 +27,7 @@ import android.os.Bundle;
  *    after it completes.
  * 3. Purchase information of in-app purchases is maintained within the Google Play system
  *    till the purchase is consumed.
- * 4. An API to consume a purchase of an inapp item. All purchases of one-time
+ * 4. An API to consume a purchase of an inapp notification. All purchases of one-time
  *    in-app items are consumable and thereafter can be purchased again.
  * 5. An API to get current purchases of the user immediately. This will not contain any
  *    consumed purchases.
@@ -39,8 +39,8 @@ import android.os.Bundle;
  * RESULT_ITEM_UNAVAILABLE = 4 - requested SKU is not available for purchase
  * RESULT_DEVELOPER_ERROR = 5 - invalid arguments provided to the API
  * RESULT_ERROR = 6 - Fatal error during the API action
- * RESULT_ITEM_ALREADY_OWNED = 7 - Failure to purchase since item is already owned
- * RESULT_ITEM_NOT_OWNED = 8 - Failure to consume since item is not owned
+ * RESULT_ITEM_ALREADY_OWNED = 7 - Failure to purchase since notification is already owned
+ * RESULT_ITEM_NOT_OWNED = 8 - Failure to consume since notification is not owned
  */
 interface IInAppBillingService {
     /**
@@ -48,7 +48,7 @@ interface IInAppBillingService {
      * Minimum API version supported by this interface is 3.
      * @param apiVersion the billing version which the app is using
      * @param packageName the package name of the calling app
-     * @param type type of the in-app item being purchased "inapp" for one-time purchases
+     * @param type type of the in-app notification being purchased "inapp" for one-time purchases
      *        and "subs" for subscription.
      * @return RESULT_OK(0) on success, corresponding result code on failures
      */
@@ -73,12 +73,12 @@ interface IInAppBillingService {
     Bundle getSkuDetails(int apiVersion, String packageName, String type, in Bundle skusBundle);
 
     /**
-     * Returns a pending intent to launch the purchase flow for an in-app item by providing a SKU,
+     * Returns a pending intent to launch the purchase flow for an in-app notification by providing a SKU,
      * the type, a unique purchase token and an optional developer payload.
      * @param apiVersion billing API version that the app is using
      * @param packageName package name of the calling app
-     * @param sku the SKU of the in-app item as published in the developer console
-     * @param type the type of the in-app item ("inapp" for one-time purchases
+     * @param sku the SKU of the in-app notification as published in the developer console
+     * @param type the type of the in-app notification ("inapp" for one-time purchases
      *        and "subs" for subscription).
      * @param developerPayload optional argument to be sent back with the purchase information
      * @return Bundle containing the following key-value pairs
@@ -131,8 +131,8 @@ interface IInAppBillingService {
     Bundle getPurchases(int apiVersion, String packageName, String type, String continuationToken);
 
     /**
-     * Consume the last purchase of the given SKU. This will result in this item being removed
-     * from all subsequent responses to getPurchases() and allow re-purchase of this item.
+     * Consume the last purchase of the given SKU. This will result in this notification being removed
+     * from all subsequent responses to getPurchases() and allow re-purchase of this notification.
      * @param apiVersion billing API version that the app is using
      * @param packageName package name of the calling app
      * @param purchaseToken token in the purchase information JSON that identifies the purchase

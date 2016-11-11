@@ -14,6 +14,12 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Base64;
 
+import org.java_websocket.WebSocket;
+import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.server.WebSocketServer;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -44,7 +50,7 @@ public class Server extends Base {
 
     private String serverName;
     private String clientName;
-    private Receiver mReceiver;
+
     private PhoneStateMonitor mMonitor;
 
     private ClientBitmapMaker.BatteryStatus batteryStatus = ClientBitmapMaker.BatteryStatus.UNKNOWN;
@@ -57,12 +63,45 @@ public class Server extends Base {
 
     private ArrayList<Intent> writerQueue = new ArrayList<>();
 
+    private Receiver mReceiver;
+    private WSServer mServer;
+
+    /**
+     * {@link BroadcastReceiver} for {@link Intent#ACTION_BATTERY_CHANGED} event
+     */
     public static class Receiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             Intent serviceIntent = new Intent(intent);
             serviceIntent.setClass(context, Server.class);
             context.startService(serviceIntent);
+        }
+    }
+
+    public class WSServer extends WebSocketServer {
+
+        public WSServer(InetSocketAddress address) {
+            super(address);
+        }
+
+        @Override
+        public void onOpen(WebSocket conn, ClientHandshake handshake) {
+
+        }
+
+        @Override
+        public void onClose(WebSocket conn, int code, String reason, boolean remote) {
+
+        }
+
+        @Override
+        public void onMessage(WebSocket conn, String message) {
+
+        }
+
+        @Override
+        public void onError(WebSocket conn, Exception ex) {
+
         }
     }
 
@@ -190,37 +229,35 @@ public class Server extends Base {
     public void post(int flags) {
         if ( flags == 0 ) return;
 
-        Intent intent = null;
-        for( int i = 1; i < writerQueue.size(); i++ ) {
-            if ( ACTION_UPDATE.equals(writerQueue.get(i).getAction()) ) {
-                intent = writerQueue.get(i);
-                log("Server > Status updated");
-                break;
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject
+                    .put("action", ACTION_UPDATE)
+                    .put(EXTRA_NAME, serverName);
+
+            if ( (flags & FLAG_BATTERY_CHANGED) != 0 ) {
+                jsonObject
+                        .put(EXTRA_BATTERY_LEVEL, batteryLevel)
+                        .put(EXTRA_BATTERY_STATUS, batteryStatus.toString());
+            }
+
+            if ( (flags & FLAG_SIGNAL_CHANGED) != 0 ) {
+                if( mMonitor != null ) {
+                    jsonObject
+                            .put(EXTRA_SIGNAL_LEVEL, mMonitor.getLevel())
+                            .put(EXTRA_SIGNAL_TYPE, mMonitor.getType())
+                            .put(EXTRA_SIGNAL_CONNECTED, mMonitor.isConnected());
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        if (mServer != null) {
+            for (WebSocket client : mServer.connections()) {
+                client.send(jsonObject.toString());
             }
         }
-
-        if ( intent == null ) {
-            intent = new Intent(ACTION_UPDATE);
-            intent.putExtra(EXTRA_NAME, serverName);
-            writerQueue.add(intent);
-            log("Server > Status added");
-        }
-
-        if ( (flags & FLAG_BATTERY_CHANGED) != 0 ) {
-            intent
-                    .putExtra(EXTRA_BATTERY_LEVEL, batteryLevel)
-                    .putExtra(EXTRA_BATTERY_STATUS, batteryStatus.toString());
-        }
-
-        if ( (flags & FLAG_SIGNAL_CHANGED) != 0 ) {
-            if( mMonitor != null ) {
-                intent
-                        .putExtra(EXTRA_SIGNAL_LEVEL, mMonitor.getLevel())
-                        .putExtra(EXTRA_SIGNAL_TYPE, mMonitor.getType())
-                        .putExtra(EXTRA_SIGNAL_CONNECTED, mMonitor.isConnected());
-            }
-        }
-
         write();
     }
 
@@ -448,7 +485,7 @@ public class Server extends Base {
     public class Inspector extends SocketTask {
         private ServerSocket serverSocket;
 
-        public Inspector(String localAddress, int localPort) {
+        Inspector(String localAddress, int localPort) {
             port = localPort;
             host = localAddress;
         }
@@ -537,10 +574,10 @@ public class Server extends Base {
             }
         }
 
-        public boolean listening() { return serverSocket != null && serverSocket.isBound(); }
-        public boolean listening(String localAddress, int localPort) { return  match(localAddress, localPort) && listening(); }
+        boolean listening() { return serverSocket != null && serverSocket.isBound(); }
+        boolean listening(String localAddress, int localPort) { return  match(localAddress, localPort) && listening(); }
 
-        public void close() {
+        void close() {
             if ( serverSocket != null ) {
                 try { serverSocket.close(); } catch (IOException ignore) {}
                 serverSocket = null;
@@ -559,7 +596,7 @@ public class Server extends Base {
             this.port = port;
         }
 
-        public Writer(Socket socket) {
+        Writer(Socket socket) {
             this.socket = socket;
             host = hostAddress = socket.getInetAddress().getHostAddress();
             port = socket.getPort();
@@ -569,7 +606,7 @@ public class Server extends Base {
          * @param intent интент для отправки
          * @return ссылка на самого себя
          */
-        public Writer put(Intent intent) {
+        Writer put(Intent intent) {
             this.intent = intent;
             return this;
         }
@@ -623,7 +660,7 @@ public class Server extends Base {
             }
         }
 
-        public void close() {
+        void close() {
             if( socket != null ) {
                 close = true;
                 (new Thread(this)).start();

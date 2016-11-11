@@ -1,1 +1,1 @@
-include ':apstatus'
+include ':apstatus', ':notifications_packer', ':notifications_catcher'
